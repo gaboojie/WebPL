@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="author" content="Gabriel Jackson (tbp8gx) & Will Baker (ppt4pq)">
+    <meta name="author" content="Gabriel Jackson (tbp8gx)">
     <title>
         Graph Visualizer
     </title>
 
+    <!-- Include bootstrap and main.css dependencies-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="res/styles/main.css">
-
 </head>
 
 <body class="body-with-background" style="background-image: url('res/background.png');">
@@ -20,7 +20,7 @@
 <?php include('header.php'); ?>
 
 <!--Landing page body-->
-<div class="fluid-container" style="display: flex; justify-content: center; align-items: center; height: 85vh">
+<div class="fluid-container" style="display: flex; justify-content: center; align-items: center; height: 100vh">
     <div class="card bg-dark text-light" style="min-width: 60%; max-width: 80%;">
         <div class="card-body d-flex flex-column align-items-center m-3">
             <!-- Title -->
@@ -42,14 +42,14 @@
 
         <!-- Display sign in if user is not signed in-->
         <?php
-            if (!isset($_SESSION['user_id'])) {
-                echo <<<END
+        if (!isset($_SESSION['user_id'])) {
+            echo <<<END
                     <!-- Sign-In -->
                     <div class="card-body d-flex flex-column align-items-center">
                         <strong style="padding-bottom: 10px;">
                             Or:
                         </strong>
-                        <a id="sign-in" href="?command=signinpage" class="btn btn-outline-success my-sm-">
+                        <a id="sign-in" href="?command=signinpage" class="btn btn-outline-light">
                             <span>
                                  Sign In
                             </span>
@@ -60,7 +60,7 @@
                         </h6>
                     </div>
                 END;
-            }
+        }
         ?>
     </div>
 </div>

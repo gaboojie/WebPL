@@ -1,6 +1,8 @@
 <?php
 
-include_once "Manager.php";
+include "Manager.php";
+
+// By Gabriel Jackson (tbp8gx) & Will Baker (ppt4pq)
 
 class ProjectController {
 
@@ -8,9 +10,6 @@ class ProjectController {
     public $message = "";
     public $isErrorMessage = false;
 
-    /**
-     * Constructor
-     */
     public function __construct($input) {
         session_start();
         $this->db = new Database();
@@ -19,15 +18,19 @@ class ProjectController {
 
     public function run() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Handle POST requests
             $this->handle_post();
         } else {
-            // Implicitly must be GET
+            // Handle GET requests
             $this->handle_get();
         }
     }
 
+    /**
+     * Handles all GET requests
+     */
     public function handle_get() {
-        // Handle GET requests that include
+        // Handle GET requests that include information in the URL
         if (isset($_GET['search'])) {
             $this->searchProjects();
             return;
@@ -42,6 +45,7 @@ class ProjectController {
             return;
         }
 
+        // Handle simple GET requests
         $command = 'landing';
         if (isset($_GET['command'])) {
             $command = $_GET['command'];
@@ -68,14 +72,16 @@ class ProjectController {
         }
     }
 
+    /**
+     * Handles all POST requests
+     */
     public function handle_post() {
-        // Default to landing page
+        // Handle POST requests
         $command = 'landing';
 
         if (isset($_GET['command'])) {
             $command = $_GET['command'];
         }
-
         switch ($command) {
             case 'sign-in':
                 login($this);
@@ -91,11 +97,31 @@ class ProjectController {
         }
     }
 
+    /**
+     * Displays a project given a project_id
+     */
     public function showProject($project_id) {
-        $graph = $this->db->getProjectByID($project_id);
+        // If a project does not exist, display the landing page instead
+        $result = $this->db->getProjectsWithID($project_id);
+        if (count($result) == 0) {
+            $this->showLandingPage();
+            return;
+        }
+        $graph = $result[0];
+
+        // Determines if the currently-logged in user owns this project
+        if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $graph['user_id']) {
+            $owns = true;
+        } else {
+            $owns = false;
+        }
+
         include("/opt/src/project/templates/visualizer.php");
     }
 
+    /**
+     * Displays all projects that match the search query in $_GET['search']
+     */
     public function searchProjects() {
         $searchQuery = $_GET['search'];
         $graphs = $this->db->getProjectsBySearchData($searchQuery);
@@ -104,6 +130,9 @@ class ProjectController {
         include("/opt/src/project/templates/search.php");
     }
 
+    /**
+     * Displays all projects that are associated with the currently-logged in user
+     */
     public function showMyProjects() {
         $graphs = $this->db->getMyProjects($_SESSION['user_id']);
         $searchTitle = "Your Projects:";
@@ -111,14 +140,19 @@ class ProjectController {
         include("/opt/src/project/templates/search.php");
     }
 
+    /**
+     * Displays the sign-in page
+     */
     public function showSignInPage() {
         $message = $this->message;
         $isErrorMessage = $this->isErrorMessage;
         include("/opt/src/project/templates/sign-in.php");
     }
 
+    /**
+     * Displays the landing page
+     */
     public function showLandingPage() {
         include("/opt/src/project/templates/index.php");
     }
-
 }

@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="author" content="Gabriel Jackson (tbp8gx), Will Baker (ppt4pq)">
+    <meta name="author" content="Will Baker (ppt4pq)">
     <title>Code Visualizer</title>
 
+    <!-- Include bootstrap and main.css dependencies-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="res/styles/main.css">
 
+    <!--Include support for ACE to render text as code -->
+    <!--Source: https://ace.c9.io/ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
 </head>
 <body>
@@ -17,30 +20,35 @@
 <!-- Dynamically include header -->
 <?php include('header.php'); ?>
 
-<!-- Show project info-->
-<div class="container" style="min-height: 80vh;">
-    <div class="d-flex justify-content-between align-items-center">
-        <h1 class="fw-bold m-3" style="color: rgb(207, 168, 115);">
+<div class="container" style="min-height: 100vh;">
+    <!-- Show title and (if owner) show settings button-->
+    <div class="d-flex justify-content-between align-items-center" style="margin-top: 100px">
+        <h1 class="fw-bold m-2" style="color: rgb(207, 168, 115);">
             Project: <?php echo $graph['title']; ?>
         </h1>
-        <button type="button" class="btn btn-outline-primary" style="width: 80px; height: 40px;" data-bs-toggle="modal" data-bs-target="#settingsModal">
-            <i class="bi bi-gear"></i>
-        </button>
+        <!-- If owner, show settings button-->
+        <?php
+            if ($owns) {
+                echo <<<HTML
+                    <button type="button" class="btn btn-outline-dark" style="width: 80px; height: 40px;" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                HTML;
+            }
+        ?>
     </div>
 
-
+    <!--Show project information-->
     <div class="fluid-container d-flex align-items-center justify-content-center">
-        <div class="card bg-light text-dark mb-3" style="width: 80vw">
-            <div class="card-body" style="width: 80vw">
+        <div class="card bg-light text-dark mb-3" style="width: 100%">
+            <div class="card-body" style="width: 100%">
                 <div class="row">
-                    <span class="graph-text-container">
-                        <a href="?project_id=" class="graph-title-text">
-                            <?php echo $graph['graph_type']; ?>
-                        </a>
+                    <span class="graph-text-container graph-title-text">
+                        Type: <?php echo $graph['graph_type']; ?>
                     </span>
                     <span class="graph-text-container">
                         <span class="graph-owner-text">
-                            <?php echo $graph['username']; ?>
+                            By: <?php echo $graph['username']; ?>
                         </span>
                     </span>
                     <span class="graph-text-container">
@@ -54,41 +62,53 @@
     </div>
 
     <!-- Display development environment -->
-
-
-    <form id="submitForm" action="?command=saveProjectCode" method="POST">
-        <input type="hidden" name="project_id" id="project_id" value="<?php echo $graph['project_id']; ?>">
-        <input type="hidden" name="editorContent" id="editorContent">
-        <div class="row border">
-            <div class="col-10"></div>
-            <div class="col">
-                <button class="btn btn-primary m-1">
-                    Run
-                </button>
-            </div>
-            <div class="col">
-                <button type="submit" class="btn btn-primary m-1">
-                    Save
-                </button>
-            </div>
+    <div class="card bg-light text-dark p-5">
+        <!-- Task bar -->
+        <div class="d-flex">
+            <button class="btn btn-dark m-1">
+                Run
+            </button>
+            <!-- Show save button if currently-logged in user is owner-->
+            <?php
+                if ($owns) {
+                    echo <<<HTML
+                        <form id="submitForm" action="?command=saveProjectCode" method="POST">
+                            <input type="hidden" name="project_id" id="project_id" value="
+                    HTML;
+                    echo $graph['project_id'];
+                    echo <<<HTML
+                         "><input type="hidden" name="editorContent" id="editorContent">
+                            <button type="submit" class="btn btn-dark m-1">
+                                Save
+                            </button>
+                        </form>
+                    HTML;
+                }
+            ?>
         </div>
-        <div class="row">
-            <div class="col-6 border">
-                Hello
+
+        <!-- Graph and editor sections-->
+        <div class="d-flex p-3">
+            <div class="col-6 border p-3">
+                Graph Area
             </div>
-            <div id="editor" class="col-6 border" style="min-height: 40vh; width: 50%;"><?php echo $graph["graph_code"]; ?></div>
+            <div id="editor" class="col-6 border" style="min-height: 40vh"><?php echo $graph["graph_code"]; ?></div>
         </div>
-    </form>
+    </div>
 </div>
 
+<!-- Model used to display settings when settings button is pressed (settings button is only shown when the logged-in user is the owner) -->
 <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <form action="?command=saveProject" method="POST">
             <div class="modal-content">
+                <!-- Modal title-->
                 <div class="modal-header">
                     <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+
+                <!-- Info of project-->
                 <div class="modal-body">
                     <div class="form-group m-2">
                         <label for="title">Title:</label>
@@ -112,8 +132,9 @@
                     </div>
                     <input type="hidden" name="project_id" value="<?php echo $graph['project_id']; ?>">
                 </div>
-                <div class="modal-footer d-flex justify-content-between align-items-center">
 
+                <!-- Modal footer including delete, cancel, and save buttons-->
+                <div class="modal-footer d-flex justify-content-between align-items-center">
                     <a href="?deleteProject=<?php echo $graph['project_id']; ?>" class="btn btn-danger">Delete Project</a>
                     <div>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -130,10 +151,12 @@
 <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.39.1/src-noconflict/snippets/python.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/ace-builds@1.39.1/css/ace.min.css" rel="stylesheet">
 <script>
+    // Add support for ACE embedding onto the 'editor' div
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/github");
     editor.session.setMode("ace/mode/javascript");
 
+    // Allow the save button to update its hidden input to save the code to the database on
     document.getElementById("submitForm").onsubmit = function() {
         var content = editor.getValue();
         document.getElementById("editorContent").value = content;

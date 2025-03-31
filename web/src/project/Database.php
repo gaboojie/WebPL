@@ -1,10 +1,6 @@
 <?php
-/**
- * Database Class
- *
- * Contains connection information to query PostgresSQL.
- */
 
+// By: Gabriel Jackson (tbp8gx) and WebPL Staff
 
 class Database {
     private $dbConnector;

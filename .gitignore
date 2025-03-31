@@ -8,3 +8,4 @@ web/src/*/
 
 web/www/*/
 !web/www/project/
+!web/www/index.html

@@ -1,5 +1,10 @@
 <?php
 
+// By: Gabriel Jackson (tbp8gx)
+
+/**
+ * Handles log-in logic
+ */
 function login($controller) {
     $db = $controller->db;
 
@@ -39,12 +44,18 @@ function login($controller) {
     }
 }
 
+/**
+ * Handles logging-out logic
+ */
 function logout($controller) {
     session_unset();
     session_destroy();
     $controller->showLandingPage();
 }
 
+/**
+ * Handles the logic that saves the info of a project (not code)
+ */
 function saveProject($controller) {
     $db = $controller->db;
     $title = $_POST["title"];
@@ -56,39 +67,55 @@ function saveProject($controller) {
     $controller->showProject($project_id);
 }
 
+/**
+ * Handles the logic that saves the code of a project
+ */
 function saveProjectCode($controller) {
     $db = $controller->db;
     $db->updateProjectCode($_POST["project_id"], $_POST["editorContent"]);
     $controller->showProject($_POST["project_id"]);
 }
 
+/**
+ * Handles delete project logic
+ */
 function deleteProject($controller) {
     $db = $controller->db;
     $db->deleteProject($_GET["deleteProject"]);
     $controller->showMyProjects();
 }
 
+/**
+ * Creates a default project
+ */
 function createProject($controller) {
     $db = $controller->db;
-    $title = "Example title";
-    $description = "Example description";
-    $graphType = "Example type";
+    $title = "New graph";
+    $description = "To update the information for your project, use the setting icon above.";
+    $graphType = "None";
     $owner = $_SESSION["user_id"];
     $project_id = $db->createProject($owner, $title, $description, "{}", "", $graphType);
     $controller->showProject($project_id);
 }
 
+/**
+ * Returns a project info as JSON
+ */
 function getProjectInfo($controller) {
     $db = $controller->db;
+
+    // Set content type to JSON
     header('Content-Type: application/json');
 
     $projects = $db->getProjectsWithID($_GET["getProjectJSON"]);
     if (count($projects) == 0) {
+        // If project does not exist, return error message
         $data = [
             "status"  => "Error",
             "message" => "No projects found with project_id: "  . $_GET["getProjectJSON"]
         ];
     } else {
+        // If project exists, return project information
         $project = $projects[0];
         $data = [
             "status" => "Success",

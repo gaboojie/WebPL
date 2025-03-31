@@ -1,3 +1,5 @@
+--- By: Gabriel Jackson (tbp8gx)
+
 DROP TABLE IF EXISTS ProjectUsers;
 DROP TABLE IF EXISTS ProjectGraphs;
 
