@@ -1,8 +1,10 @@
-/db/
+db/*/
 compose-dev.yaml
 docker-compose.yml
 
 # Ignore everything but the project folders
-/web/
-!./web/src/project/
-!./web/www/project/
+web/src/*/
+!web/src/project/
+
+web/www/*/
+!web/www/project/
