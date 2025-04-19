@@ -14,6 +14,17 @@
     <!--Include support for ACE to render text as code -->
     <!--Source: https://ace.c9.io/ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+
+    <!-- Include support for Vis.js network graph tool-->
+    <!-- https://visjs.org/ -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    <!-- Include support for Babel transpiler tool -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js" type="text/javascript"></script>
+
+    <!-- Use 'main.js' file to create interactivity between DOM, ACE, and Vis.js -->
+    <script src="res/scripts/babel-plugin.js" type="text/javascript"></script>
+    <script src="res/scripts/main.js" type="text/javascript"></script>
 </head>
 <body>
 
@@ -64,10 +75,7 @@
     <!-- Display development environment -->
     <div class="card bg-light text-dark p-5">
         <!-- Task bar -->
-        <div class="d-flex">
-            <button class="btn btn-dark m-1">
-                Run
-            </button>
+        <div class="d-flex flex-row align-items-center">
             <!-- Show save button if currently-logged in user is owner-->
             <?php
                 if ($owns) {
@@ -89,10 +97,21 @@
 
         <!-- Graph and editor sections-->
         <div class="d-flex p-3">
-            <div class="col-6 border p-3">
-                Graph Area
+            <div id="graph" class="col-6 border p-3" style="width: 50%; height: 600px;">
+
             </div>
             <div id="editor" class="col-6 border" style="min-height: 40vh"><?php echo $graph["graph_code"]; ?></div>
+        </div>
+
+        <div class="d-flex flex-row align-items-center fs-1">
+            <button id="add" class="btn btn-light btn-outline-dark m-1">Add</button>
+            <button id="remove" class="btn btn-light btn-outline-dark m-1">Remove</button>
+            <input class="form-control m-1" type="text" id="graphInput" placeholder="No node/edge selected."/>
+        </div>
+
+        <div class="d-flex flex-row align-items-center fs-1">
+            <button id="physics" class="btn btn-light btn-outline-dark m-1">Turn physics on.</button>
+            <button id="directed" class="btn btn-light btn-outline-dark m-1">Switch to a directed graph.</button>
         </div>
     </div>
 </div>
