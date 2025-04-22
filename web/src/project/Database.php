@@ -74,7 +74,7 @@ class Database {
 
     public function getProjectsThatMatch($isOwner, $user_id, $searchField, $maxProjects) {
         $search_data = '%' . $searchField . '%';
-        if ($isOwner) {
+        if ($isOwner && !($user_id === -1)) {
             // Return all of my projects up to $count
             return $this->query("SELECT * FROM ProjectGraphs NATURAL JOIN ProjectUsers WHERE user_id = $1 LIMIT $2", $user_id, $maxProjects);
         } else {

@@ -101,9 +101,17 @@ function createProject($controller) {
 function getProjectsThatMatch($controller) {
     $db = $controller->db;
 
+    // If bad request, send 404
     if (!isset($_POST["isOwner"]) || !isset($_POST["searchQuery"]) || !isset($_POST["maxProjects"])) {
         http_response_code(400);
         return;
+    }
+
+    // If not logged in pass bad log in user id
+    if (!isset($_SESSION["user_id"])) {
+        $user_id = -1;
+    } else {
+        $user_id = $_SESSION["user_id"];
     }
 
     // Set content type to JSON
@@ -112,10 +120,9 @@ function getProjectsThatMatch($controller) {
     $isOwner = $_POST["isOwner"] === 'true';
     $searchQuery = $_POST["searchQuery"];
     $maxProjects = $_POST["maxProjects"];
-    $user_id = $_SESSION["user_id"];
 
+    // Add each project's data to the json
     $projects = $db->getProjectsThatMatch($isOwner, $user_id, $searchQuery, $maxProjects);
-
     $projectsData = [];
     foreach ($projects as $project) {
         $projectData = [

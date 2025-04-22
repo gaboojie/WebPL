@@ -166,10 +166,10 @@ function addListenersToClickOnGraph() {
     // It should update the node or edge's value in the textbox
     graph.on("select", function (params) {
        if (mode === null) {
+           const inputElement = document.getElementById("graphInput");
            if (params.nodes.length > 0) {
                // Selected node -> Update textbox with node data
                const nodeID = params.nodes[0];
-               const inputElement = document.getElementById("graphInput");
                inputElement.disabled = false;
                inputElement.placeholder = "Node '" + nodeID + "' selected. Click here to update node ID.";
                selectedNode = nodeID;
@@ -178,7 +178,6 @@ function addListenersToClickOnGraph() {
                // Selected edge -> Update textbox with edge data
                const edgeID = params.edges[0];
                const edge = edges.get(edgeID);
-               const inputElement = document.getElementById("graphInput");
                inputElement.disabled = false;
                inputElement.placeholder = "Edge from " + edge.from + " to " + edge.to + " selected. Click here to update edge ID.";
                selectedEdge = edgeID;
@@ -196,6 +195,8 @@ function addListenersToClickOnGraph() {
             } else if (params.previousSelection.edges.length > 0) {
                 selectedEdge = null;
             }
+        } else {
+            disableGraphInput();
         }
     });
 
@@ -325,6 +326,8 @@ function updateGraphButtons() {
     if (mode === "Add") {
         addNode.textContent = "Adding";
         addNode.classList.add("active");
+        graph.unselectAll();
+        disableGraphInput();
     } else {
         addNode.textContent = "Add";
         addNode.classList.remove("active");
@@ -335,6 +338,8 @@ function updateGraphButtons() {
     if (mode === "Remove") {
         removeNode.textContent = "Removing";
         removeNode.classList.add("active");
+        graph.unselectAll();
+        disableGraphInput();
     } else {
         removeNode.textContent = "Remove";
         removeNode.classList.remove("active");
