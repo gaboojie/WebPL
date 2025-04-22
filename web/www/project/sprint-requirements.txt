@@ -1,0 +1,42 @@
+Sprint 4 requirements:
+
+5 DYNAMIC BEHAVIORS:
+Each screen or view should include some dynamic behavior (at least one)
+1. Landing page: (DONE)
+    - "Modify style and layout of your screens (or views) when a specific event occurs"
+    - Graph that is moving in the background that dynamically responds to input
+2. Sign-in page (DONE)
+    - "Perform client-side input validation"
+    - Warning user if they use a non-valid username or password before submission.
+3. List of projects page (DONE)
+    - "Perform DOM manipulation"
+    - Dynamically update page by loading projects in
+4. Visualizer page (DONE)
+    - "Perform client-side input validation"
+    - Provide user-appropriate error messages (When trying to update a node to another node's ID)
+5. Visualizer page (DONE)
+    - "Modify style and layout of your screens"
+    - Updates style of buttons when the project code is executed.
+
+At least one event listener: (DONE)
+- In main.js, we added event listeners to listen when a click on the graph occurred.
+
+Implement and use at least one anonymous function: (DONE)
+- In main.js, there are several instances of using anonymous functions, i.e. in addListenerToClickOnGraph() anonymous functions are made and ran to attach to listeners.
+
+Implement and use at least one arrow function: (DONE)
+- In main.js' function 'updateNodeID()', edges.forEach is used with an anonymous arrow function: edge => { }.
+- (This was done to ensure that edges that referred to the old node ID gets updated in the graph.)
+
+Define, instantiate, and use at least one JavaScript object: (DONE)
+- In 'worker.js', we created a CodeWorker class to handle the execution of the code.
+- It is defined in worker.js.
+- It is instantiated in 'run()' in main.js.
+- It is used in stop() in main.js (and many other places).
+- If you're looking for a plain Object, there are also instances of this in 'worker.js'.
+
+Use jQuery in at least one (but not all) of your screens (or views) to provide dynamic behavior: (DONE)
+- In main.js, addGraphButtonListeners() uses jQuery to add event listeners to the 'add' and 'remove' buttons in the DOM.
+
+Use at least one asynchronous AJAX query that consumes your JSON from Sprint 3 and modifies the DOM to include that data in the page (DONE)
+- In 'search.php', an AJAX query is ran at the end of the script at the bottom of the file to dynamically receive searched or owned projects.

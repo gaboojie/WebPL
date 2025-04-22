@@ -13,9 +13,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="res/styles/main.css">
+
+    <!-- Include support for Vis.js network graph tool-->
+    <!-- Source: https://visjs.org/ -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 </head>
 
-<body class="body-with-background" style="background-image: url('res/background.png');">
+<body id="body">
+
+<div id="bg-graph"></div>
 
 <!-- Dynamically include header -->
 <?php include('header.php'); ?>
@@ -70,4 +76,5 @@
 <?php include('footer.php'); ?>
 
 </body>
+<script type="text/javascript" src="res/scripts/movingGraph.js"></script>
 </html>

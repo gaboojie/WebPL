@@ -72,6 +72,18 @@ class Database {
        return $this->query("SELECT * FROM ProjectGraphs NATURAL JOIN ProjectUsers WHERE user_id = $1 ;", $user_id);
     }
 
+    public function getProjectsThatMatch($isOwner, $user_id, $searchField, $maxProjects) {
+        $search_data = '%' . $searchField . '%';
+        if ($isOwner) {
+            // Return all of my projects up to $count
+            return $this->query("SELECT * FROM ProjectGraphs NATURAL JOIN ProjectUsers WHERE user_id = $1 LIMIT $2", $user_id, $maxProjects);
+        } else {
+            // Return all projects that match search field up to $count
+            $search_data = '%' . $search_data . '%';
+            return $this->query("SELECT * FROM ProjectGraphs NATURAL JOIN ProjectUsers WHERE title LIKE $1 OR graph_type LIKE $1 LIMIT $2", $search_data, $maxProjects);
+        }
+    }
+
     public function getProjectsWithID($project_id) {
         return $this->query("SELECT * FROM ProjectGraphs NATURAL JOIN ProjectUsers WHERE project_id = $1", $project_id);
     }

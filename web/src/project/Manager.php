@@ -98,6 +98,43 @@ function createProject($controller) {
     $controller->showProject($project_id);
 }
 
+function getProjectsThatMatch($controller) {
+    $db = $controller->db;
+
+    if (!isset($_POST["isOwner"]) || !isset($_POST["searchQuery"]) || !isset($_POST["maxProjects"])) {
+        http_response_code(400);
+        return;
+    }
+
+    // Set content type to JSON
+    header('Content-Type: application/json');
+
+    $isOwner = $_POST["isOwner"] === 'true';
+    $searchQuery = $_POST["searchQuery"];
+    $maxProjects = $_POST["maxProjects"];
+    $user_id = $_SESSION["user_id"];
+
+    $projects = $db->getProjectsThatMatch($isOwner, $user_id, $searchQuery, $maxProjects);
+
+    $projectsData = [];
+    foreach ($projects as $project) {
+        $projectData = [
+            "project_id" => $project['project_id'],
+            "title" => $project['title'],
+            "description" => $project['description'],
+            "type" => $project['graph_type'],
+            "owner_id" => $project['user_id'],
+            "owner_username" => $project['username'],
+            "graph_data" => $project['graph_data'],
+            "graph_code" => $project['graph_code'],
+            "created_date" =>  $project['created']
+        ];
+        $projectsData[] = $projectData;
+    }
+
+    echo json_encode($projectsData);
+}
+
 /**
  * Returns a project info as JSON
  */

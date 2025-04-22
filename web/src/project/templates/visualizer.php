@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="author" content="Will Baker (ppt4pq)">
+    <meta name="author" content="Gabriel Jackson (tbp8gx) and Will Baker (ppt4pq)">
     <title>Code Visualizer</title>
 
     <!-- Include bootstrap and main.css dependencies-->
@@ -12,19 +12,27 @@
     <link rel="stylesheet" href="res/styles/main.css">
 
     <!--Include support for ACE to render text as code -->
-    <!--Source: https://ace.c9.io/ -->
+    <!-- Source: https://ace.c9.io/ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
 
     <!-- Include support for Vis.js network graph tool-->
-    <!-- https://visjs.org/ -->
+    <!-- Source: https://visjs.org/ -->
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
     <!-- Include support for Babel transpiler tool -->
+    <!-- Source: https://babeljs.io/ -->
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js" type="text/javascript"></script>
+
+    <!-- Include support for jQuery -->
+    <!-- Source: https://releases.jquery.com/ -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" type="text/javascript" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
     <!-- Use 'main.js' file to create interactivity between DOM, ACE, and Vis.js -->
     <script src="res/scripts/babel-plugin.js" type="text/javascript"></script>
+    <script src="res/scripts/worker.js" type="text/javascript"></script>
     <script src="res/scripts/main.js" type="text/javascript"></script>
+
+
 </head>
 <body>
 
@@ -75,7 +83,7 @@
     <!-- Display development environment -->
     <div class="card bg-light text-dark p-5">
         <!-- Task bar -->
-        <div class="d-flex flex-row align-items-center">
+        <div class="d-flex justify-content-between align-items-center">
             <!-- Show save button if currently-logged in user is owner-->
             <?php
                 if ($owns) {
@@ -93,6 +101,18 @@
                     HTML;
                 }
             ?>
+
+            <div class="d-flex flex-row align-items-center">
+                <div id="statusText" class="m-3 text-danger fw-bold d-none">
+                    Running...
+                </div>
+                <button id="runButton" type="button" class="btn m-1 btn-dark">
+                    <i id="runIcon" class="bi bi-play-fill"></i>
+                </button>
+                <button id="stopButton" class="btn m-1 d-none">
+                    <i id="stopIcon" class="bi-stop-fill"></i>
+                </button>
+            </div>
         </div>
 
         <!-- Graph and editor sections-->

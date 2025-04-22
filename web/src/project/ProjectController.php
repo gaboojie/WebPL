@@ -92,6 +92,9 @@ class ProjectController {
             case 'saveProjectCode':
                 saveProjectCode($this);
                 return;
+            case 'getMatchingProjects':
+                getProjectsThatMatch($this);
+                return;
             default:
                 $this->showLandingPage();
         }
@@ -124,7 +127,6 @@ class ProjectController {
      */
     public function searchProjects() {
         $searchQuery = $_GET['search'];
-        $graphs = $this->db->getProjectsBySearchData($searchQuery);
         $searchTitle = "Graph Visualizations:";
         $searchType = "AllProjects";
         include("/opt/src/project/templates/search.php");
