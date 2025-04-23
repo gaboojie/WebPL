@@ -72,8 +72,24 @@ function saveProject($controller) {
  */
 function saveProjectCode($controller) {
     $db = $controller->db;
-    $db->updateProjectCode($_POST["project_id"], $_POST["editorContent"]);
-    $controller->showProject($_POST["project_id"]);
+
+    // If bad request, send 404
+    if (!isset($_POST["project_id"]) || !isset($_POST["graph_data"]) || !isset($_POST["graph_code"]) || !isset($_SESSION['user_id'])) {
+        http_response_code(400);
+        return;
+    }
+
+    // If not owner, send 403
+    $project = $db->getProjectByID($_POST["project_id"]);
+    if ($project['user_id'] != $_SESSION['user_id']) {
+        http_response_code(403);
+        return;
+    }
+
+    $graph_data = json_encode($_POST["graph_data"], true);
+    $db->updateProjectCode($_POST["project_id"], $_POST["graph_code"], $graph_data);
+
+    echo "Success";
 }
 
 /**
@@ -94,7 +110,7 @@ function createProject($controller) {
     $description = "To update the information for your project, use the setting icon above.";
     $graphType = "None";
     $owner = $_SESSION["user_id"];
-    $project_id = $db->createProject($owner, $title, $description, "{}", "", $graphType);
+    $project_id = $db->createProject($owner, $title, $description, json_encode('{"nodes":[{"id":0,"label":"0","x":-32.5,"y":-28.59375},{"id":1,"label":"1","x":70.5,"y":-46.59375},{"id":2,"label":"2","x":12.5,"y":-115.59375}],"edges":[{"from":0,"to":1,"id":"d8a4c928-e9e9-4627-ae9b-142763905e6c"},{"from":1,"to":2,"id":"0aedaf92-a079-4f42-8279-d0ff705926ea"},{"from":2,"to":0,"id":"ed84d611-2ec7-4508-8de5-b5798050e3db"}],"options":{"physics":false,"smooth":false,"arrows":{"to":{"enabled":false,"type":"arrow"}}}}'), "", $graphType);
     $controller->showProject($project_id);
 }
 

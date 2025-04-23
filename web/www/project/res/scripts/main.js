@@ -5,22 +5,15 @@ let lastNodeClicked = null;
 let selectedEdge = null;
 let selectedNode = null;
 let directed = false;
+let useSmoothEdges = false;
 let runMode = "Stopped";
 let worker = null;
+let editor = null;
+let lastLineHighlighted = null;
 
 // Define template nodes and edges
-let nodes = [
-    { id: "0", label: "0", x: 0, y: 0 },
-    { id: "1", label: "1", x: 50, y: 0 },
-    { id: "2", label: "2", x: 50, y: 50 },
-    { id: "3", label: "3", x: 0, y: 50 },
-];
-let edges = [
-    {from: "0", to: "1"},
-    {from: "1", to: "2"},
-    {from: "2", to: "3"},
-    {from: "3", to: "0"},
-];
+let nodes = [];
+let edges = [];
 
 // Initialize function (after DOM loads)
 function initialize() {
@@ -36,7 +29,8 @@ function initialize() {
         edges: {
             arrows: {
                 to: { enabled: directed, type: 'arrow' }
-            }
+            },
+            smooth: useSmoothEdges
         }
     };
 
@@ -49,6 +43,21 @@ function initialize() {
 
     // Initially disable graph input
     disableGraphInput();
+
+    // Add ACE support
+    editor = ace.edit("editor");
+    editor.setTheme('ace/theme/github')
+    editor.session.setMode("ace/mode/javascript");
+
+    // Allow for newer feature support
+    editor.session.on('changeMode', function(e, session) {
+        if (session.getMode().$id === "ace/mode/javascript" && session.$worker) {
+            session.$worker.send("setOptions", [{
+                esversion: 8,
+                esnext: false
+            }]);
+        }
+    });
 }
 
 // Initialize JS to load after DOM loads
@@ -72,15 +81,38 @@ function addGraphButtonListeners() {
         updateGraphButtons();
     });
 
+    // Smooth edge listener
+    const smoothElement = document.getElementById('smoothEdge');
+    smoothElement.addEventListener('click', function() {
+        // Toggle if we're using smooth edges
+        useSmoothEdges = !useSmoothEdges;
+        const options = {
+            edges: {
+                arrows: {
+                    to: {
+                        enabled: directed, type: 'arrow'
+                    }
+                },
+                smooth: useSmoothEdges
+            }
+        };
+        graph.setOptions(options);
+        if (useSmoothEdges) {
+            smoothElement.textContent = 'Edges - Curved';
+        } else {
+            smoothElement.textContent = 'Edges - Straight';
+        }
+    });
+
     // Physics listener
     const physicsElement = document.getElementById('physics');
     physicsElement.addEventListener('click', function() {
         graph.options.physics = !graph.options.physics;
         graph.setOptions(graph.options);
         if (graph.options.physics) {
-            physicsElement.textContent = "Turn physics off.";
+            physicsElement.textContent = "Physics - On";
         } else {
-            physicsElement.textContent = "Turn physics on.";
+            physicsElement.textContent = "Physics - Off";
         }
     });
 
@@ -95,16 +127,17 @@ function addGraphButtonListeners() {
                     to: {
                         enabled: directed, type: 'arrow'
                     }
-                }
+                },
+                smooth: useSmoothEdges
             }
         };
         graph.setOptions(options);
 
         // Update directed button
         if (directed) {
-            directedElement.textContent = "Switch to an undirected graph.";
+            directedElement.textContent = "Graph - Directed";
         } else {
-            directedElement.textContent = "Switch to a directed graph.";
+            directedElement.textContent = "Graph - Undirected";
         }
     });
 
@@ -113,6 +146,12 @@ function addGraphButtonListeners() {
 
     // Add run code listeners
     addRunCodeListeners();
+
+    // Add save listener
+    addSaveListener();
+
+    // Load project data from file (dynamically)
+    loadProject();
 }
 
 // Add listeners to click events on graph
@@ -244,6 +283,100 @@ function addListenersToClickOnGraph() {
     });
 }
 
+function addSaveListener() {
+    // Allow the save button to update its hidden input to save the code to the database on
+    document.getElementById("submitForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        saveProject();
+    });
+}
+
+function loadProject() {
+    const graphDataElement = document.getElementById("graphDataHidden");
+    const graphDataValue = JSON.parse(graphDataElement.textContent);
+
+    // Update noes and edges
+    nodes.clear()
+    edges.clear()
+    nodes.update(graphDataValue.nodes);
+    edges.update(graphDataValue.edges);
+
+    // Update options
+    useSmoothEdges = graphDataValue.options.smooth;
+    directed = graphDataValue.options.arrows.to.enabled;
+    const options = {
+        physics: !!(graphDataValue.options.physics),
+        edges: {
+            arrows: {
+                to: {
+                    enabled: directed, type: 'arrow'
+                }
+            },
+            smooth: useSmoothEdges
+        }
+    };
+    graph.setOptions(options);
+
+    // Update displays of physics, directed, and edge smoothed buttons
+    const physicsButton = document.getElementById('physics');
+    if (graphDataValue.options.physics) {
+        physicsButton.textContent = "Physics - On";
+    }
+    const directedButton = document.getElementById('directed');
+    if (directed) {
+        directedButton.textContent = "Graph - Directed";
+    }
+    const smoothEdgeButton = document.getElementById('smoothEdge');
+    if (useSmoothEdges) {
+        smoothEdgeButton.textContent = "Edges - Curved"
+    }
+}
+
+function saveProject() {
+    console.log("Saving project");
+    const url = "index.php?command=saveProjectGraphAndCode";
+    const request = new XMLHttpRequest();
+    request.open('POST', url, true);
+
+    const statusTextElement = document.getElementById('statusText');
+    statusTextElement.textContent = "Saving...";
+    statusTextElement.classList.add("text-danger");
+    statusTextElement.classList.remove("d-none");
+    statusTextElement.classList.remove("text-secondary");
+
+    request.onload = () => {
+      if (request.status === 200) {
+          statusTextElement.textContent = "Saved.";
+          statusTextElement.classList.remove("text-danger");
+          statusTextElement.classList.add("text-secondary");
+          console.log("Saved.");
+      }
+    };
+
+    request.onerror = () => {
+        console.log("Error saving project!");
+    }
+
+    const formData = new FormData();
+    const graphData = {
+        nodes: nodes.get(),
+        edges: edges.get(),
+        options: {
+            physics: !!(graph.options.physics),
+            smooth: useSmoothEdges,
+            arrows: {
+                to: {
+                    enabled: directed, type: 'arrow'
+                }
+            }
+        }
+    };
+    formData.append('graph_data', JSON.stringify(graphData));
+    formData.append("project_id", document.getElementById("project_id").value);
+    formData.append("graph_code", editor.getValue());
+    request.send(formData);
+}
+
 function addRunCodeListeners() {
     // Add listener to run the code and dynamically update the runButton
     const runButton = document.getElementById("runButton");
@@ -256,15 +389,13 @@ function addRunCodeListeners() {
             run();
         } else if (runMode === "Running") {
             // Running -> Paused mode
-            pause();
-        } else if (runMode === "Paused") {
-            resume();
+            stop();
         }
     });
 
-    // Add listener to stopButton
-    stopButton.addEventListener("click", function (event) {
-        stop();
+    document.getElementById('errorButton').addEventListener('click', function () {
+        const errorBannerElement = document.getElementById('errorBanner');
+        errorBannerElement.classList.add('d-none');
     });
 }
 
@@ -325,24 +456,24 @@ function updateGraphButtons() {
     const addNode = document.getElementById('add');
     if (mode === "Add") {
         addNode.textContent = "Adding";
-        addNode.classList.add("active");
+        addNode.classList.add("graphButtonActive");
         graph.unselectAll();
         disableGraphInput();
     } else {
         addNode.textContent = "Add";
-        addNode.classList.remove("active");
+        addNode.classList.remove("graphButtonActive");
     }
 
     // Update remove node
     const removeNode = document.getElementById("remove");
     if (mode === "Remove") {
         removeNode.textContent = "Removing";
-        removeNode.classList.add("active");
+        removeNode.classList.add("graphButtonActive");
         graph.unselectAll();
         disableGraphInput();
     } else {
         removeNode.textContent = "Remove";
-        removeNode.classList.remove("active");
+        removeNode.classList.remove("graphButtonActive");
     }
 
     lastNodeClicked = null;
@@ -356,10 +487,16 @@ function disableGraphInput() {
     inputElement.value = "";
 }
 
+function showErrorAlert(errorText) {
+    const errorElement = document.getElementById('errorText');
+    const errorBannerElement = document.getElementById('errorBanner');
+    errorBannerElement.classList.remove('d-none');
+    errorElement.textContent = errorText;
+}
+
 async function run() {
     const runButton = document.getElementById("runButton");
     const runIcon = document.getElementById("runIcon");
-    const stopButton = document.getElementById("stopButton");
     const statusText = document.getElementById("statusText");
 
     console.clear();
@@ -372,92 +509,36 @@ async function run() {
     worker.start(code);
 
     // Update running icon
-    runIcon.classList.add('bi-pause-fill');
+    runIcon.classList.add('bi-stop-fill');
     runIcon.classList.remove('bi-play-fill');
     runButton.classList.add('btn-danger');
-    runButton.classList.remove('btn-dark');
+    runButton.classList.remove('btn-outline-dark');
+    runButton.classList.remove('btn-light');
 
     // Update status text
     statusText.classList.remove('d-none');
+    statusText.classList.add('text-danger');
+    statusText.classList.remove('text-secondary');
     statusText.textContent = "Running...";
-
-    // Update stop
-    stopButton.classList.remove('d-none');
-    stopButton.classList.add('btn-danger');
-    stopButton.classList.remove('btn-secondary');
-}
-
-function pause() {
-    const runButton = document.getElementById("runButton");
-    const runIcon = document.getElementById("runIcon");
-    const stopButton = document.getElementById("stopButton");
-    const statusText = document.getElementById("statusText");
-
-    runMode = "Paused";
-    worker.pause();
-
-    // Update running icon
-    runIcon.classList.remove('bi-pause-fill');
-    runIcon.classList.add('bi-play-fill');
-    runButton.classList.remove('btn-danger');
-    runButton.classList.add('btn-secondary');
-
-    // Update status text
-    statusText.textContent = "Paused.";
-    statusText.classList.add("text-secondary");
-    statusText.classList.remove("text-danger");
-
-    // Update stop
-    stopButton.classList.remove('d-none');
-    stopButton.classList.add('btn-secondary');
-    stopButton.classList.remove('btn-danger');
-}
-
-function resume() {
-    const runButton = document.getElementById("runButton");
-    const runIcon = document.getElementById("runIcon");
-    const stopButton = document.getElementById("stopButton");
-    const statusText = document.getElementById("statusText");
-
-    runMode = "Running";
-    worker.resume();
-
-    // Update running icon
-    runIcon.classList.add('bi-pause-fill');
-    runIcon.classList.remove('bi-play-fill');
-    runButton.classList.add('btn-danger');
-    runButton.classList.remove('btn-secondary');
-
-    // Update status text
-    statusText.textContent = "Running...";
-    statusText.classList.remove("text-secondary");
-    statusText.classList.add("text-danger");
-
-    // Update stop
-    stopButton.classList.remove('d-none');
-    stopButton.classList.remove('btn-secondary');
-    stopButton.classList.add('btn-danger');
 }
 
 function stop() {
     const runButton = document.getElementById("runButton");
     const runIcon = document.getElementById("runIcon");
-    const stopButton = document.getElementById("stopButton");
     const statusText = document.getElementById("statusText");
 
     runMode = "Stopped";
     worker.terminate();
 
     // Update running icon
-    runIcon.classList.remove('bi-pause-fill');
+    runIcon.classList.remove('bi-stop-fill');
     runIcon.classList.add('bi-play-fill');
-    runButton.classList.add('btn-dark');
+    runButton.classList.add('btn-outline-dark');
     runButton.classList.remove('btn-danger');
     runButton.classList.remove('btn-secondary');
 
     // Update status text
-    statusText.classList.add("d-none");
-
-    // Update stop
-    stopButton.classList.add('d-none');
+    statusText.classList.remove('text-danger');
+    statusText.classList.add('text-secondary');
+    statusText.textContent = 'Finished.';
 }

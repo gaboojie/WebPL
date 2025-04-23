@@ -7,10 +7,12 @@
  */
 
 class CodeWorker {
+
     constructor() {
         // Define workerLogic that the worker uses
         const workerCode =
-            `function ${this.workerLogic.toString()}
+            `
+            function ${this.workerLogic.toString()}
             this.workerLogic();
         `;
 
@@ -24,36 +26,98 @@ class CodeWorker {
 
             // If worker finished, send signal to main thread to stop()
             if (command === 'finished') {
+                if ('error' in data) {
+                    showErrorAlert(data.error);
+                }
                 stop();
+            } else if (command === 'getNodes') {
+                // Send nodes data to Worker
+                this.worker.postMessage({
+                   command: 'getNodes',
+                   data: {
+                       nodes: nodes.get()
+                   }
+                });
+            } else if (command === 'getEdges') {
+                // Send edges data to Worker
+                this.worker.postMessage({
+                    command: 'getEdges',
+                    data: {
+                        edges: edges.get()
+                    }
+                });
+            } else if (command === 'setNodes') {
+                nodes.clear();
+                nodes.update(data.nodes);
+            } else if (command === 'setEdges') {
+                edges.clear();
+                edges.update(data.edges);
             }
         };
     }
 
     // This function defines the worker logic
     workerLogic() {
+        globalThis.nodesCache = undefined;
+        globalThis.edgesCache = undefined;
         // When the worker receives a message, this function will handle it
         self.onmessage = async function (e ) {
             const { command, data } = e.data;
             if (command === 'start') {
                 // Handle start command and execute the code passed in data.code
 
-                // Include step function in code (for displaying which line is executing and allowing for periodic awaits)
-                const stepFn =
-                    `async function step(line) {
-                          await new Promise(resolve => setTimeout(resolve, 100));
-                          while (self.paused) {
-                                await new Promise(resolve => setTimeout(resolve, 100));
-                          }
-                    }\n`;
-                const combinedCode = `${stepFn}\n${data.code}`;
-
                 // Set state
-                self.paused = false;
                 self.terminated = false;
                 console.log("Running code...");
 
+                const workerCodeToExecute = `
+                    function finished() {
+                        postMessage({
+                            command: 'finished',
+                            data: {}
+                        });
+                    }
+                    async function getNodes() {
+                        globalThis.nodesCache = undefined;
+                        postMessage({
+                            command: 'getNodes'
+                        });
+                        while (globalThis.nodesCache === undefined) {
+                            await new Promise(resolve => setTimeout(resolve, 10));
+                        }
+                        return globalThis.nodesCache;
+                    }
+                    async function getEdges() {
+                        globalThis.edgesCache = undefined;
+                        postMessage({
+                            command: 'getEdges'
+                        });
+                        while (globalThis.edgesCache === undefined) {
+                            await new Promise(resolve => setTimeout(resolve, 10));
+                        }
+                        return globalThis.edgesCache;                    
+                    }
+                    function setNodes(nodes) {
+                        postMessage({
+                            command: 'setNodes',
+                            data: {
+                                nodes: nodes
+                            }
+                        });
+                    }
+                    function setEdges(edges) {
+                        postMessage({
+                            command: 'setEdges',
+                            data: {
+                                edges: edges
+                            }
+                        });
+                    }
+                    ${data.code}
+                `;
+
                 // Include code to run
-                const blob = new Blob([combinedCode], {
+                const blob = new Blob([workerCodeToExecute], {
                     type: "text/javascript"
                 });
                 const url = URL.createObjectURL(blob);
@@ -61,62 +125,40 @@ class CodeWorker {
                     await import(url);
                 } catch (error) {
                     console.error("Execution error:", error);
+                    postMessage({
+                        command: 'finished',
+                        data: {
+                            error: 'Error: ' + error.name + ' - ' + error.message
+                        }
+                    });
                 }
-
-                // Tell the main thread that the worker finished (so the main thread knows to update the DOM/state)
-                self.terminated = true;
-                console.log("Code finished.");
-                postMessage({
-                    command: 'finished',
-                    data: {}
-                });
-                self.close();
-            } else if (command === 'pause' && !self.paused) {
-                // Handle pause state
-                self.paused = true;
-                console.log("Paused code.");
-            } else if (command === 'resume' && self.paused) {
-                // Handle resume state
-                self.paused = false;
-                console.log("Resumed code");
-            } else if (command === 'terminate' && !terminated) {
+            }  else if (command === 'terminate' && !terminated) {
                 // Handle terminate state
                 self.terminated = true;
-                console.log("Terminated code.");
                 self.close();
+            } else if (command === 'getNodes') {
+                globalThis.nodesCache = data.nodes;
+            } else if (command === 'getEdges') {
+                globalThis.edgesCache = data.edges;
             }
         }
     }
 
     // A function that will tell the worker to start with code as the input code
     start(code) {
-        // Transform the code using Babel to insert step() and async functions
-        const transformed = Babel.transform(code, {
-            plugins: [insertStepPlugin],
-            parserOpts: { sourceType: "script" }
-        }).code;
-
         // Start the worker with the transformed code
         this.worker.postMessage({
             command: 'start',
             data: {
-                code: transformed
+                code: code
             }
         });
     }
 
-    // A function that will tell the worker to pause from the main thread
-    pause() {
-        this.worker.postMessage({ command: 'pause', data: {} });
-    }
-
-    // A function that will tell the worker to resume from the main thread
-    resume() {
-        this.worker.postMessage({ command: 'resume', data: {} });
-    }
-
     // A function that will tell the worker to terminate from the main thread
     terminate() {
+        console.log("Terminated code.");
+        self.terminated = true;
         this.worker.postMessage({ command: 'terminate', data: {} });
         this.worker.terminate();
     }

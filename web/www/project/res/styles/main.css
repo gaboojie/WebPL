@@ -66,3 +66,18 @@ body {
     height: 100vh;
     pointer-events: auto;
 }
+
+.graphInputClass::placeholder {
+    color: azure;
+    opacity: 1;
+}
+
+.graphButtonActive {
+    background-color: black;
+    color: white;
+}
+
+.graphButton:hover {
+    background-color: black;
+    color: white;
+}

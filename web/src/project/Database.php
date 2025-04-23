@@ -105,8 +105,8 @@ class Database {
         $this->query("DELETE FROM ProjectGraphs WHERE project_id = $1", $project_id);
     }
 
-    public function updateProjectCode($project_id, $graph_code) {
-        $this->query("UPDATE ProjectGraphs SET graph_code = $1 WHERE project_id = $2", $graph_code, $project_id);
+    public function updateProjectCode($project_id, $graph_code, $graph_data) {
+        $this->query("UPDATE ProjectGraphs SET graph_code = $1, graph_data = $2 WHERE project_id = $3", $graph_code, $graph_data, $project_id);
     }
 
 }

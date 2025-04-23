@@ -89,7 +89,7 @@ class ProjectController {
             case 'saveProject':
                 saveProject($this);
                 return;
-            case 'saveProjectCode':
+            case 'saveProjectGraphAndCode':
                 saveProjectCode($this);
                 return;
             case 'getMatchingProjects':
@@ -119,7 +119,7 @@ class ProjectController {
             $owns = false;
         }
 
-        include("/students/tbp8gx/students/tbp8gx/private/project/templates/visualizer.php");
+        include("/opt/src/project/templates/visualizer.php");
     }
 
     /**
@@ -129,7 +129,7 @@ class ProjectController {
         $searchQuery = $_GET['search'];
         $searchTitle = "Graph Visualizations:";
         $searchType = "AllProjects";
-        include("/students/tbp8gx/students/tbp8gx/private/project/templates/search.php");
+        include("/opt/src/project/templates/search.php");
     }
 
     /**
@@ -139,7 +139,7 @@ class ProjectController {
         $graphs = $this->db->getMyProjects($_SESSION['user_id']);
         $searchTitle = "Your Projects:";
         $searchType = "MyProjects";
-        include("/students/tbp8gx/students/tbp8gx/private/project/templates/search.php");
+        include("/opt/src/project/templates/search.php");
     }
 
     /**
@@ -148,13 +148,13 @@ class ProjectController {
     public function showSignInPage() {
         $message = $this->message;
         $isErrorMessage = $this->isErrorMessage;
-        include("/students/tbp8gx/students/tbp8gx/private/project/templates/sign-in.php");
+        include("/opt/src/project/templates/sign-in.php");
     }
 
     /**
      * Displays the landing page
      */
     public function showLandingPage() {
-        include("/students/tbp8gx/students/tbp8gx/private/project/templates/index.php");
+        include("/opt/src/project/templates/index.php");
     }
 }
