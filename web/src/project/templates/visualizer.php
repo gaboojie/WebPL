@@ -9,7 +9,7 @@
     <!-- Include bootstrap and main.css dependencies-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="res/styles/main.css">
+    <link rel="stylesheet" href="/tbp8gx/project/res/styles/main.css">
 
     <!--Include support for ACE to render text as code -->
     <!-- Source: https://ace.c9.io/ -->
@@ -24,8 +24,8 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" type="text/javascript" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
     <!-- Use 'main.js' file to create interactivity between DOM, ACE, and Vis.js -->
-    <script src="res/scripts/worker.js" type="text/javascript"></script>
-    <script src="res/scripts/main.js" type="text/javascript"></script>
+    <script src="/tbp8gx/project/res/scripts/worker.js" type="text/javascript"></script>
+    <script src="/tbp8gx/project/res/scripts/main.js" type="text/javascript"></script>
 
     <!--Include support for ACE to render text as code -->
     <!--Source: https://ace.c9.io/ -->

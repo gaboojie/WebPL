@@ -9,7 +9,7 @@
     <!-- Include bootstrap and main.css dependencies-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="res/styles/main.css">
+    <link rel="stylesheet" href="/tbp8gx/project/res/styles/main.css">
 
     <!-- Include support for Vis.js network graph tool-->
     <!-- Source: https://visjs.org/ -->
