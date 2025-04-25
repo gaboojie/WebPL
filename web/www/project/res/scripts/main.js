@@ -193,6 +193,15 @@ function addListenersToClickOnGraph() {
                // Remove nodes
                const nodeID = params.nodes[0];
                nodes.remove(nodeID);
+
+               // Remove any edges that did connect to this node
+               edges.forEach(edge => {
+                   if (edge.from === nodeID)  {
+                       edges.remove(edge.id);
+                   } else if (edge.to === nodeID) {
+                       edges.remove(edge.id);
+                   }
+               });
            } else if (params.edges.length > 0) {
                // Remove edges
                const edgeID = params.edges[0];

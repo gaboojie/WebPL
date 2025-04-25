@@ -10,6 +10,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="res/styles/main.css">
+
+    <!-- Include support for Vis.js network graph tool-->
+    <!-- Source: https://visjs.org/ -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 </head>
 
 <body>
@@ -29,6 +33,7 @@
 <?php include('footer.php'); ?>
 
 <script>
+
     function updateDOMWithProjectsList(data) {
         const projectListElement = document.getElementById("projectList");
 
